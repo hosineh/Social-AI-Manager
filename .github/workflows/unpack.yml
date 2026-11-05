@@ -1,9 +1,11 @@
+
 name: Extract Project
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -11,19 +13,24 @@ permissions:
 jobs:
   extract:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Extract ZIP
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Extract project ZIP
         run: |
-          unzip -q SocialAIManager_Full_Starter.zip -d extracted
-          cp -a extracted/. .
+          mkdir -p extracted
+          unzip -oq SocialAIManager_Full_Starter.zip -d extracted
+          cp -a extracted/SocialAIManager_Full_Starter/. .
           rm -rf extracted
 
-      - name: Save project files
+      - name: Commit extracted files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --cached --quiet || git commit -m "Extract project files"
-          git push
+          git add app backend build.gradle.kts settings.gradle.kts gradle.properties README_AR.md DEPLOY_FROM_ANDROID_AR.md
+          git diff --cached --quiet || git commit -m "Add Android app and backend source"
+          git push origin HEAD:main
